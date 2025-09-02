@@ -4,38 +4,46 @@ Guide complet pour intégrer le chatbot Thierry sur votre site WordPress.
 
 ## 🚀 Méthode 1 : Intégration Simple (Recommandée)
 
-### Option A - Via l'éditeur de thème
+### Option A - Via Avada Options (Thème Avada)
 
-1. **Accédez à l'admin WordPress**
-2. **Apparence** → **Éditeur de thème** 
-3. Sélectionnez **footer.php**
-4. **Ajoutez avant `</body>`** :
-
+1. **Admin WordPress** → **Avada** → **Options**
+2. **Advanced** → **Code Fields (Tracking etc.)**
+3. Dans **"Space before </body>"**, ajoutez :
 ```html
-<!-- Chatbot Thierry -->
-<script src="https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget.js"></script>
+<script src="https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget-wordpress.js"></script>
 ```
 
-### Option B - Via functions.php (Plus propre)
+### Option B - Via functions.php (Recommandée)
 
 1. **Apparence** → **Éditeur de thème**
 2. Sélectionnez **functions.php**
 3. **Ajoutez à la fin** :
 
 ```php
-// Intégration Chatbot Thierry
+// Intégration Chatbot Thierry - WordPress optimisé
 function add_thierry_chatbot() {
-    if (!is_admin()) { // Ne pas charger dans l'admin
+    if (!is_admin()) {
         wp_enqueue_script(
-            'thierry-chatbot',
-            'https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget.js',
+            'thierry-chatbot-wp',
+            'https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget-wordpress.js',
             array(),
             '1.0.0',
-            true // Charger dans le footer
+            true
         );
     }
 }
 add_action('wp_enqueue_scripts', 'add_thierry_chatbot');
+```
+
+### Option C - Via l'éditeur de thème (Si footer.php existe)
+
+1. **Apparence** → **Éditeur de thème** 
+2. Sélectionnez **footer.php**
+3. **Ajoutez avant `</body>`** :
+
+```html
+<!-- Chatbot Thierry WordPress -->
+<script src="https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget-wordpress.js"></script>
 ```
 
 ## 🔧 Méthode 2 : Plugin Personnalisé
@@ -75,8 +83,8 @@ class ThierryChatbotPlugin {
         // Vérifier si le chatbot est activé
         if (get_option('thierry_chatbot_enabled', '1') == '1') {
             wp_enqueue_script(
-                'thierry-chatbot',
-                'https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget.js',
+                'thierry-chatbot-wp',
+                'https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget-wordpress.js',
                 array(),
                 '1.0.0',
                 true
@@ -193,7 +201,7 @@ new ThierryChatbotPlugin();
 1. Ajoutez un widget **HTML**
 2. Collez le code :
 ```html
-<script src="https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget.js"></script>
+<script src="https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget-wordpress.js"></script>
 ```
 
 ### Gutenberg (Éditeur de blocs)
@@ -222,7 +230,7 @@ window.thierryCustomConfig = {
     }
 };
 </script>
-<script src="https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget.js"></script>
+<script src="https://adelin-hugot-projectview.github.io/awima-chat/chatbot-widget-wordpress.js"></script>
 ```
 
 ## 🔒 Sécurité et Performance
