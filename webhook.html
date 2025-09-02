@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thierry Chat Webhook</title>
+</head>
+<body>
+    <script>
+        // Configuration - À modifier selon vos besoins
+        const WEBHOOK_CONFIG = {
+            n8nWebhookUrl: 'https://n8n.srv800894.hstgr.cloud/webhook/awima-chat',
+            allowedOrigins: ['*'], // Mettre les domaines autorisés ou ['*'] pour tous
+            corsEnabled: true
+        };
+
+        class WebhookHandler {
+            constructor() {
+                this.handleMessage();
+            }
+
+            async handleMessage() {
+                // Vérifier si c'est une requête POST
+                if (window.location.search.includes('method=POST')) {
+                    // Simuler le traitement d'un webhook pour GitHub Pages
+                    // En réalité, GitHub Pages ne peut pas traiter les POST directement
+                    this.sendCorsHeaders();
+                    return;
+                }
+
+                // Écouter les messages postMessage pour la communication cross-origin
+                window.addEventListener('message', async (event) => {
+                    if (!this.isOriginAllowed(event.origin)) {
+                        console.warn('Origine non autorisée:', event.origin);
+                        return;
+                    }
+
+                    if (event.data.type === 'CHAT_MESSAGE') {
+                        try {
+                            const response = await this.processMessage(event.data.payload);
+                            event.source.postMessage({
+                                type: 'CHAT_RESPONSE',
+                                payload: response,
+                                requestId: event.data.requestId
+                            }, event.origin);
+                        } catch (error) {
+                            console.error('Erreur traitement message:', error);
+                            event.source.postMessage({
+                                type: 'CHAT_ERROR',
+                                payload: { error: error.message },
+                                requestId: event.data.requestId
+                            }, event.origin);
+                        }
+                    }
+                });
+
+                // Alternative: traitement via URL parameters pour GET requests
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('message')) {
+                    const message = urlParams.get('message');
+                    const conversationId = urlParams.get('conversationId') || 'direct_' + Date.now();
+                    
+                    try {
+                        const response = await this.processMessage({
+                            chatInput: message,
+                            conversationId: conversationId,
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        this.sendJsonResponse(response);
+                    } catch (error) {
+                        this.sendJsonResponse({ error: error.message }, 500);
+                    }
+                }
+            }
+
+            async processMessage(payload) {
+                const { chatInput, conversationId, timestamp } = payload;
+
+                // Log de la requête
+                console.log('Message reçu:', { chatInput, conversationId, timestamp });
+
+                try {
+                    // Appel au webhook N8N réel
+                    const response = await fetch(WEBHOOK_CONFIG.n8nWebhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chatInput,
+                            conversationId,
+                            timestamp
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Erreur N8N: ${response.status} ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    return data;
+
+                } catch (error) {
+                    console.error('Erreur appel N8N:', error);
+                    
+                    // Réponse de fallback si N8N ne répond pas
+                    return {
+                        output: this.getFallbackResponse(chatInput)
+                    };
+                }
+            }
+
+            getFallbackResponse(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                if (lowerMessage.includes('rdv') || lowerMessage.includes('rendez-vous') || lowerMessage.includes('reservation')) {
+                    return "Je comprends que tu veux prendre rendez-vous ! Malheureusement, je ne peux pas accéder au système de réservation en ce moment. Peux-tu contacter directement Awima ou réessayer dans quelques minutes ?";
+                }
+                
+                if (lowerMessage.includes('horaire') || lowerMessage.includes('heure') || lowerMessage.includes('disponible')) {
+                    return "Pour les horaires disponibles, il faudrait que je consulte l'agenda d'Awima. Le système de réservation semble temporairement indisponible. Tu peux peut-être essayer de le contacter directement ?";
+                }
+                
+                if (lowerMessage.includes('salut') || lowerMessage.includes('bonjour') || lowerMessage.includes('hello')) {
+                    return "Salut ! 👋 Je suis Thierry, l'assistant d'Awima. Normalement je t'aide à prendre rendez-vous, mais j'ai un petit problème technique en ce moment. Tu peux me dire ce dont tu as besoin ?";
+                }
+                
+                return "Désolé, j'ai un problème de connexion avec le système de réservation. Peux-tu réessayer dans quelques minutes ou contacter Awima directement ? 🤖";
+            }
+
+            isOriginAllowed(origin) {
+                if (WEBHOOK_CONFIG.allowedOrigins.includes('*')) {
+                    return true;
+                }
+                return WEBHOOK_CONFIG.allowedOrigins.includes(origin);
+            }
+
+            sendCorsHeaders() {
+                // Pour GitHub Pages, on ne peut pas définir les headers HTTP
+                // Cette fonction existe pour la compatibilité
+                console.log('CORS headers would be sent in a real server environment');
+            }
+
+            sendJsonResponse(data, status = 200) {
+                // Pour GitHub Pages, on affiche la réponse dans la page
+                document.body.innerHTML = `
+                    <div style="font-family: monospace; padding: 20px;">
+                        <h3>Webhook Response (${status})</h3>
+                        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
+${JSON.stringify(data, null, 2)}
+                        </pre>
+                        <p style="color: #666; font-size: 12px;">
+                            GitHub Pages Webhook Handler - ${new Date().toISOString()}
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // Alternative pour les appels directs JSONP
+        function handleJsonpCallback(data) {
+            const callbackName = new URLSearchParams(window.location.search).get('callback');
+            if (callbackName && window[callbackName]) {
+                window[callbackName](data);
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            window.webhookHandler = new WebhookHandler();
+        });
+
+        // Export global pour les appels externes
+        window.ThierryWebhook = {
+            processMessage: async (payload) => {
+                const handler = new WebhookHandler();
+                return await handler.processMessage(payload);
+            }
+        };
+    </script>
+
+    <!-- Interface de test (optionnel) -->
+    <div id="testInterface" style="display: none; font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+        <h2>🤖 Thierry Webhook Test Interface</h2>
+        <p>Interface de test pour le webhook du chatbot Thierry</p>
+        
+        <div style="margin: 20px 0;">
+            <label for="testMessage">Message de test:</label><br>
+            <textarea id="testMessage" rows="3" style="width: 100%; margin: 5px 0;">Salut, je veux prendre un rdv</textarea>
+        </div>
+        
+        <button onclick="testWebhook()" style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Tester le Webhook
+        </button>
+        
+        <div id="testResult" style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; display: none;">
+            <h4>Résultat:</h4>
+            <pre id="testOutput"></pre>
+        </div>
+
+        <script>
+            async function testWebhook() {
+                const message = document.getElementById('testMessage').value;
+                const resultDiv = document.getElementById('testResult');
+                const outputPre = document.getElementById('testOutput');
+                
+                try {
+                    const response = await window.ThierryWebhook.processMessage({
+                        chatInput: message,
+                        conversationId: 'test_' + Date.now(),
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    outputPre.textContent = JSON.stringify(response, null, 2);
+                    resultDiv.style.display = 'block';
+                    
+                } catch (error) {
+                    outputPre.textContent = 'Erreur: ' + error.message;
+                    resultDiv.style.display = 'block';
+                }
+            }
+            
+            // Afficher l'interface de test si demandé
+            if (window.location.search.includes('test=true')) {
+                document.getElementById('testInterface').style.display = 'block';
+            }
+        </script>
+    </div>
+</body>
+</html>

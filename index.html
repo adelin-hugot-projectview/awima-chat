@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thierry - Assistant RDV Awima</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px 20px;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 30px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            font-size: 14px;
+            border-left: 4px solid #4ade80;
+        }
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(74, 222, 128, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Thierry</h1>
+        <p class="subtitle">Assistant conversationnel pour la prise de rendez-vous avec Awima</p>
+        
+        <div class="status">
+            <div class="status-dot"></div>
+            Service en ligne
+        </div>
+
+        <div class="card">
+            <h2>📋 Pages disponibles</h2>
+            <p>Accédez aux différentes parties du système :</p>
+            <a href="webhook.html" class="btn">🔗 Webhook Handler</a>
+            <a href="webhook.html?test=true" class="btn">🧪 Test Interface</a>
+        </div>
+
+        <div class="card">
+            <h2>🚀 Intégration rapide</h2>
+            <p>Ajoutez le chatbot sur votre site en une ligne :</p>
+            <div class="code-block">
+&lt;script src="https://votre-github-pages.github.io/awima-chat/chatbot-widget.js"&gt;&lt;/script&gt;
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">💬</div>
+                <h3>Conversationnel</h3>
+                <p>Interface naturelle de chat</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <h3>Responsive</h3>
+                <p>Adapté à tous les écrans</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Rapide</h3>
+                <p>Chargement instantané</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎨</div>
+                <h3>Personnalisable</h3>
+                <p>Styles configurables</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📚 Documentation</h2>
+            <p>Consultez le README.md pour les instructions détaillées d'installation et de configuration.</p>
+            <a href="https://github.com/votre-username/awima-chat" class="btn" target="_blank">📖 Voir la Documentation</a>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Configuration</h2>
+            <p>Endpoints disponibles :</p>
+            <div style="text-align: left; font-size: 14px; opacity: 0.9;">
+                <p><strong>Webhook:</strong> /webhook.html</p>
+                <p><strong>Test:</strong> /webhook.html?test=true</p>
+                <p><strong>Widget:</strong> /chatbot-widget.js</p>
+            </div>
+        </div>
+
+        <footer style="margin-top: 40px; opacity: 0.7; font-size: 14px;">
+            <p>Développé pour Awima - Assistant RDV intelligent</p>
+            <p>Propulsé par GitHub Pages</p>
+        </footer>
+    </div>
+</body>
+</html>
