@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thierry Chat Webhook - Test Local</title>
+</head>
+<body>
+    <script>
+        // Version locale simplifiée pour les tests
+        class LocalWebhookHandler {
+            constructor() {
+                this.setupLocalTesting();
+            }
+
+            setupLocalTesting() {
+                // Réponses prédéfinies pour les tests locaux
+                this.responses = {
+                    "salut": "Salut ! 👋 Je suis Thierry, ton assistant pour prendre rendez-vous avec Awima. Comment ça va ?",
+                    "bonjour": "Bonjour ! Comment puis-je t'aider à organiser un rendez-vous avec Awima aujourd'hui ?",
+                    "rdv": "Parfait ! Pour prendre rendez-vous avec Awima, j'ai besoin de quelques infos. Quel type de consultation t'intéresse ?",
+                    "rendez-vous": "Excellent ! Awima propose plusieurs types de consultations :\n• Coaching professionnel\n• Conseil stratégique\n• Consultation personnalisée\n\nLequel t'intéresse ?",
+                    "coaching": "Super choix ! Le coaching professionnel avec Awima dure généralement 1h. Es-tu disponible cette semaine ou préfères-tu la semaine prochaine ?",
+                    "conseil": "Parfait ! Pour le conseil stratégique, Awima propose des créneaux de 90 minutes. Quand serais-tu disponible ?",
+                    "consultation": "Excellente idée ! Pour une consultation personnalisée, nous pouvons prévoir entre 45min et 1h30. Quelle durée préfères-tu ?",
+                    "horaire": "Awima est généralement disponible :\n• Lundi au vendredi : 9h-18h\n• Samedi matin : 9h-12h\n\nQuel créneau te conviendrait le mieux ?",
+                    "disponible": "Voici les créneaux disponibles cette semaine :\n• Mardi 14h-15h\n• Mercredi 10h-11h\n• Jeudi 16h-17h\n• Vendredi 9h-10h\n\nLequel te convient ?",
+                    "prix": "Les tarifs d'Awima sont :\n• Consultation (1h) : 80€\n• Coaching (1h) : 100€\n• Conseil stratégique (90min) : 150€\n\nTous les prix incluent le suivi personnalisé !",
+                    "tarif": "Les tarifs d'Awima sont :\n• Consultation (1h) : 80€\n• Coaching (1h) : 100€\n• Conseil stratégique (90min) : 150€\n\nTous les prix incluent le suivi personnalisé !"
+                };
+
+                this.defaultResponse = "Je comprends ! Peux-tu me donner plus de détails ? Je suis là pour t'aider à organiser ton rendez-vous avec Awima. Tu peux me parler de :\n• Le type de consultation qui t'intéresse\n• Tes disponibilités\n• Tes questions sur les services";
+
+                console.log('🤖 Webhook local Thierry initialisé - Mode TEST');
+            }
+
+            async processMessage(payload) {
+                const { chatInput } = payload;
+                const lowerMessage = chatInput.toLowerCase();
+
+                console.log('💬 Message reçu:', chatInput);
+
+                // Simuler un délai de traitement
+                await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+
+                // Recherche de mots-clés dans le message
+                for (const [keyword, response] of Object.entries(this.responses)) {
+                    if (lowerMessage.includes(keyword)) {
+                        console.log('✅ Réponse trouvée pour:', keyword);
+                        return { output: response };
+                    }
+                }
+
+                // Réponse par défaut
+                console.log('🔍 Utilisation de la réponse par défaut');
+                return { output: this.defaultResponse };
+            }
+        }
+
+        // Gestionnaire global pour les appels externes
+        window.ThierryWebhook = {
+            processMessage: async (payload) => {
+                const handler = new LocalWebhookHandler();
+                return await handler.processMessage(payload);
+            }
+        };
+
+        console.log('🚀 Webhook local Thierry prêt !');
+    </script>
+
+    <!-- Interface de test -->
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+        <h2>🧪 Test Local - Webhook Thierry</h2>
+        <p>Interface de test pour le chatbot en mode local</p>
+        
+        <div style="margin: 20px 0;">
+            <label for="testMessage">Message de test:</label><br>
+            <textarea id="testMessage" rows="3" style="width: 100%; margin: 5px 0; padding: 10px;">Salut, je veux prendre un rdv</textarea>
+        </div>
+        
+        <button onclick="testLocalWebhook()" style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Tester la Réponse
+        </button>
+        
+        <div id="testResult" style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; display: none;">
+            <h4>Réponse de Thierry:</h4>
+            <div id="testOutput" style="background: white; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;"></div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #e3f2fd; border-radius: 10px;">
+            <h3>💡 Mots-clés de test</h3>
+            <p>Essayez ces messages pour tester les réponses :</p>
+            <ul>
+                <li><code>salut</code> ou <code>bonjour</code></li>
+                <li><code>rdv</code> ou <code>rendez-vous</code></li>
+                <li><code>coaching</code> ou <code>conseil</code></li>
+                <li><code>horaire</code> ou <code>disponible</code></li>
+                <li><code>prix</code> ou <code>tarif</code></li>
+            </ul>
+        </div>
+
+        <script>
+            async function testLocalWebhook() {
+                const message = document.getElementById('testMessage').value;
+                const resultDiv = document.getElementById('testResult');
+                const outputDiv = document.getElementById('testOutput');
+                
+                if (!message.trim()) {
+                    alert('Veuillez saisir un message de test');
+                    return;
+                }
+                
+                try {
+                    outputDiv.innerHTML = '<p style="color: #666; font-style: italic;">Thierry réfléchit...</p>';
+                    resultDiv.style.display = 'block';
+                    
+                    const response = await window.ThierryWebhook.processMessage({
+                        chatInput: message,
+                        conversationId: 'test_local_' + Date.now(),
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    outputDiv.innerHTML = response.output.replace(/\n/g, '<br>');
+                    
+                } catch (error) {
+                    outputDiv.innerHTML = '<p style="color: red;">❌ Erreur: ' + error.message + '</p>';
+                }
+            }
+            
+            // Test automatique au chargement
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('🎯 Page de test chargée - Prêt pour les tests !');
+            });
+        </script>
+    </div>
+</body>
+</html>

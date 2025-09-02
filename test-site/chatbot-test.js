@@ -1,14 +1,30 @@
 (function() {
     'use strict';
     
-    // Configuration - À personnaliser pour chaque site
+    // Configuration pour test local
     const CHATBOT_CONFIG = {
-        webhookUrl: 'https://adelin-hugot-projectview.github.io/awima-chat/webhook.html',
         botName: 'Thierry',
         botTitle: 'Assistant de planification RDV',
-        welcomeMessage: 'Salut ! Je t\'aide à réserver un créneau avec Awima. Tu veux qu\'on programme un rendez-vous ?',
-        position: 'bottom-right' // bottom-right, bottom-left, top-right, top-left
+        welcomeMessage: 'Salut ! Je suis en mode test local. Je t\'aide à réserver un créneau avec Awima !',
+        position: 'bottom-right'
     };
+    
+    // Réponses de test intégrées
+    const TEST_RESPONSES = {
+        "salut": "Salut ! 👋 Je suis Thierry, ton assistant pour prendre rendez-vous avec Awima. Comment ça va ?",
+        "bonjour": "Bonjour ! Comment puis-je t'aider à organiser un rendez-vous avec Awima aujourd'hui ?",
+        "rdv": "Parfait ! Pour prendre rendez-vous avec Awima, j'ai besoin de quelques infos. Quel type de consultation t'intéresse ?",
+        "rendez-vous": "Excellent ! Awima propose plusieurs types de consultations :\n• Coaching professionnel\n• Conseil stratégique\n• Consultation personnalisée\n\nLequel t'intéresse ?",
+        "coaching": "Super choix ! Le coaching professionnel avec Awima dure généralement 1h. Es-tu disponible cette semaine ou préfères-tu la semaine prochaine ?",
+        "conseil": "Parfait ! Pour le conseil stratégique, Awima propose des créneaux de 90 minutes. Quand serais-tu disponible ?",
+        "consultation": "Excellente idée ! Pour une consultation personnalisée, nous pouvons prévoir entre 45min et 1h30. Quelle durée préfères-tu ?",
+        "horaire": "Awima est généralement disponible :\n• Lundi au vendredi : 9h-18h\n• Samedi matin : 9h-12h\n\nQuel créneau te conviendrait le mieux ?",
+        "disponible": "Voici les créneaux disponibles cette semaine :\n• Mardi 14h-15h\n• Mercredi 10h-11h\n• Jeudi 16h-17h\n• Vendredi 9h-10h\n\nLequel te convient ?",
+        "prix": "Les tarifs d'Awima sont :\n• Consultation (1h) : 80€\n• Coaching (1h) : 100€\n• Conseil stratégique (90min) : 150€\n\nTous les prix incluent le suivi personnalisé !",
+        "tarif": "Les tarifs d'Awima sont :\n• Consultation (1h) : 80€\n• Coaching (1h) : 100€\n• Conseil stratégique (90min) : 150€\n\nTous les prix incluent le suivi personnalisé !"
+    };
+    
+    const DEFAULT_RESPONSE = "Je comprends ! Peux-tu me donner plus de détails ? Je suis là pour t'aider à organiser ton rendez-vous avec Awima. Tu peux me parler de :\n• Le type de consultation qui t'intéresse\n• Tes disponibilités\n• Tes questions sur les services";
     
     // Inject CSS
     const css = `
@@ -267,6 +283,18 @@
             border: 1px solid #fecaca;
         }
 
+        .thierry-test-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff6b6b;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
         @media (max-width: 480px) {
             .thierry-chat-widget {
                 width: calc(100vw - 20px);
@@ -285,7 +313,6 @@
     
     class ThierryChatWidget {
         constructor() {
-            this.webhookUrl = CHATBOT_CONFIG.webhookUrl;
             this.isTyping = false;
             this.conversationId = this.generateConversationId();
             
@@ -301,14 +328,14 @@
             widget.innerHTML = `
                 <div class="thierry-chat-header">
                     <div class="thierry-status-dot"></div>
+                    <div class="thierry-test-badge">TEST</div>
                     <h2>${CHATBOT_CONFIG.botName}</h2>
                     <p>${CHATBOT_CONFIG.botTitle}</p>
                 </div>
                 
                 <div class="thierry-chat-messages" id="thierryMessages">
                     <div class="thierry-welcome-message">
-                        <p>👋 Salut ! Je suis ${CHATBOT_CONFIG.botName}, ton assistant pour prendre rendez-vous avec Awima.<br>
-                        Comment puis-je t'aider aujourd'hui ?</p>
+                        <p>👋 ${CHATBOT_CONFIG.welcomeMessage}</p>
                     </div>
                 </div>
                 
@@ -355,12 +382,14 @@
             });
             
             setTimeout(() => {
-                this.addBotMessage(CHATBOT_CONFIG.welcomeMessage);
+                this.addBotMessage("Salut ! Essaye de me dire 'rdv' ou 'horaire' pour tester mes réponses ! 🤖");
             }, 1200);
+            
+            console.log('🤖 Chatbot Thierry TEST initialisé !');
         }
         
         generateConversationId() {
-            return 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            return 'test_conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
         
         async sendMessage() {
@@ -376,43 +405,36 @@
             try {
                 this.showTypingIndicator();
                 
-                const response = await this.callWebhook(message);
+                // Simuler un délai
+                await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
+                
+                const response = this.getTestResponse(message);
                 
                 this.hideTypingIndicator();
-                
-                if (response && response.output) {
-                    this.addBotMessage(response.output);
-                } else {
-                    this.addBotMessage("Désolé, je n'ai pas pu traiter votre demande. Pouvez-vous réessayer ?");
-                }
+                this.addBotMessage(response);
                 
             } catch (error) {
                 console.error('Erreur:', error);
                 this.hideTypingIndicator();
-                this.showError("Une erreur s'est produite. Veuillez réessayer dans quelques instants.");
+                this.showError("Une erreur s'est produite en mode test.");
             } finally {
                 this.setInputState(true);
             }
         }
         
-        async callWebhook(message) {
-            const response = await fetch(this.webhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    chatInput: message,
-                    conversationId: this.conversationId,
-                    timestamp: new Date().toISOString()
-                })
-            });
+        getTestResponse(message) {
+            const lowerMessage = message.toLowerCase();
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            // Recherche de mots-clés
+            for (const [keyword, response] of Object.entries(TEST_RESPONSES)) {
+                if (lowerMessage.includes(keyword)) {
+                    console.log('✅ Réponse trouvée pour:', keyword);
+                    return response;
+                }
             }
             
-            return await response.json();
+            console.log('🔍 Utilisation de la réponse par défaut');
+            return DEFAULT_RESPONSE;
         }
         
         addUserMessage(message) {
@@ -443,9 +465,9 @@
         
         formatBotMessage(message) {
             let formatted = this.escapeHtml(message);
-            formatted = formatted.replace(/\\n/g, '<br>');
-            formatted = formatted.replace(/• ([^<\\n]+)/g, '<br>• <strong>$1</strong>');
-            formatted = formatted.replace(/(https?:\\/\\/[^\\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+            formatted = formatted.replace(/\n/g, '<br>');
+            formatted = formatted.replace(/• ([^<\n]+)/g, '<br>• <strong>$1</strong>');
+            formatted = formatted.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
             return formatted;
         }
         
@@ -512,12 +534,14 @@
         }
     }
     
-    // Auto-initialize
+    // Auto-initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Initialisation du chatbot Thierry...');
             window.thierryChatWidget = new ThierryChatWidget();
         });
     } else {
+        console.log('🚀 Initialisation immédiate du chatbot Thierry...');
         window.thierryChatWidget = new ThierryChatWidget();
     }
 })();
